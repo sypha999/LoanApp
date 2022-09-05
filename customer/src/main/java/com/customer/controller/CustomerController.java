@@ -18,6 +18,12 @@ public class CustomerController {
         return customerServiceImplementation.viewEligible();
     }
 
+    @PostMapping("/register")
+    public String register(@RequestParam String phone_number,@RequestParam String first_name,@RequestParam String last_name,@RequestParam String password,@RequestParam Integer max){
+        customerServiceImplementation.createCustomer(phone_number,first_name,last_name,password,max);
+        return "registration successful";
+    }
+
     @GetMapping("/logout")
     public void logout(){
         customerServiceImplementation.logout();

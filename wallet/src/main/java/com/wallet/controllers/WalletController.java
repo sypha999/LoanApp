@@ -14,7 +14,7 @@ public class WalletController {
 
     final WalletServiceImplementation walletServiceImplementation;
 
-    @PostMapping("/create-wallet")
+    @PostMapping("/create")
     public String create(@RequestParam String account_number){
         walletServiceImplementation.createWallet(account_number);
         return "wallet created";

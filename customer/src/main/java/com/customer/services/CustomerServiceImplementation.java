@@ -4,15 +4,19 @@ import com.customer.exceptions.CustomException;
 import com.customer.models.Customer;
 import com.customer.repositories.CustomerRepository;
 import com.product.models.Product;
+import com.product.repositories.ProductRepository;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpSession;
 import java.util.*;
 
-@RequiredArgsConstructor
+
 @Data
 @Service
 public class CustomerServiceImplementation implements CustomerService{
@@ -20,6 +24,10 @@ public class CustomerServiceImplementation implements CustomerService{
     final CustomerRepository customerRepository;
     final HttpSession httpSession;
     final RestTemplate restTemplate;
+    final ProductRepository productRepository;
+
+
+
 
     @Override
     public String createCustomer(String phone_number, String first_name, String last_name, String password, Integer max) {
@@ -33,6 +41,9 @@ public class CustomerServiceImplementation implements CustomerService{
             customer.setPhone(phone_number);
             customer.setMax(max); //would be hardcoded upon testing
             customerRepository.save(customer);
+
+            restTemplate.postForObject("http://localhost:8086/api/v1/wallet/create?account_number={account_number}",null,String.class,phone_number);
+
         }
         return "Registration Successful";
     }
@@ -59,13 +70,18 @@ public class CustomerServiceImplementation implements CustomerService{
     @Override
     public String selectProduct(Integer product_id) {
 
-        Boolean product = restTemplate.getForObject("http://localhost:8081/api/v1/products/find?product_id={product_id}", Boolean.class,product_id);
 
-        if(Boolean.FALSE.equals(product)){
+
+        Boolean product = productRepository.findById(Long.valueOf(product_id)).isPresent();
+
+        if(!product){
             throw  new CustomException("product does not exist");
         }
 
         else{
+            Product product1 = productRepository.findById(Long.valueOf(product_id)).orElseThrow();
+                restTemplate.postForObject("http://localhost:8086/api/v1/wallet/credit/{account}?amount={amount}",null,String.class,httpSession.getAttribute("phone_number"),product1.getLoan_amount());
+                restTemplate.postForObject("http://localhost:8084/api/v1/loans/activate?account_number={account_number}&amount={amount}&tenure={tenure}",null,String.class,httpSession.getAttribute("phone_number"),product1.getLoan_amount(),product1.getTenure());
 
         }
         return "Loan Activated";
