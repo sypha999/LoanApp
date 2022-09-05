@@ -4,12 +4,8 @@ import com.customer.exceptions.CustomException;
 import com.customer.models.Customer;
 import com.customer.repositories.CustomerRepository;
 import com.product.models.Product;
-import com.product.repositories.ProductRepository;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -19,12 +15,12 @@ import java.util.*;
 
 @Data
 @Service
+@RequiredArgsConstructor
 public class CustomerServiceImplementation implements CustomerService{
 
     final CustomerRepository customerRepository;
     final HttpSession httpSession;
     final RestTemplate restTemplate;
-    final ProductRepository productRepository;
 
 
 
@@ -71,15 +67,13 @@ public class CustomerServiceImplementation implements CustomerService{
     public String selectProduct(Integer product_id) {
 
 
-
-        Boolean product = productRepository.findById(Long.valueOf(product_id)).isPresent();
+        Boolean product = restTemplate.postForObject("http://localhost:8081/api/v1/products/find/{product_id}",null,Boolean.class,product_id);
 
         if(!product){
             throw  new CustomException("product does not exist");
         }
-
         else{
-            Product product1 = productRepository.findById(Long.valueOf(product_id)).orElseThrow();
+            Product product1 = restTemplate.getForObject("http://localhost:8081/api/v1/products/{product_id}",Product.class,product_id);
                 restTemplate.postForObject("http://localhost:8086/api/v1/wallet/credit/{account}?amount={amount}",null,String.class,httpSession.getAttribute("phone_number"),product1.getLoan_amount());
                 restTemplate.postForObject("http://localhost:8084/api/v1/loans/activate?account_number={account_number}&amount={amount}&tenure={tenure}",null,String.class,httpSession.getAttribute("phone_number"),product1.getLoan_amount(),product1.getTenure());
 

@@ -28,8 +28,13 @@ public class ProductController {
         return productServiceImplementation.findEligible(amount);
     }
 
-    @PostMapping("/find")
-    public Boolean findProduct(Integer product_id){
+    @PostMapping("/find/{product_id}")
+    public Boolean findProduct(@PathVariable Integer product_id){
        return productRepository.findById(Long.valueOf(product_id)).isPresent();
+    }
+
+    @GetMapping("/{product_id}")
+    public Product getProduct(@PathVariable Integer product_id){
+        return productRepository.findById(Long.valueOf(product_id)).get();
     }
 }
