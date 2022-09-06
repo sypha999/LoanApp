@@ -10,9 +10,10 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 public class GlobalExceptionhandler extends ResponseEntityExceptionHandler {
 
         @ExceptionHandler(CustomException.class)
-        public ResponseEntity<ErrorResponse> handlerForFailedMailException(final CustomException ex) {
+        public ResponseEntity<ErrorResponse> handlerForFailedException(final CustomException ex) {
             ErrorResponse errorResponse = new ErrorResponse();
             errorResponse.setMessage(ex.getMessage());
+            errorResponse.setHttpStatus(HttpStatus.BAD_REQUEST);
             return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
 
 }}
